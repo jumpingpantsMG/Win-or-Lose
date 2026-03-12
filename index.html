@@ -5,1002 +5,353 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Risk It</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  /* ── Reset & Base ── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg:      #080810;
-    --surface: #10101e;
-    --card:    #16162a;
-    --border:  #2a2a48;
-    --accent:  #f0e040;
-    --accent2: #40e0d0;
-    --danger:  #ff4f4f;
-    --success: #40d080;
-    --text:    #f0f0f8;
-    --muted:   #6060a0;
-    --font-display: 'Bebas Neue', sans-serif;
-    --font-body:    'Manrope', sans-serif;
-    --font-mono:    'DM Mono', monospace;
-  }
-
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-body);
-    font-size: 16px;
-    line-height: 1.5;
-  }
-
-  /* ── Noise overlay ── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-    background-size: 200px 200px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* ── Layout ── */
-  #app {
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 16px;
-  }
-
-  .screen { display: none; width: 100%; max-width: 520px; }
-  .screen.active { display: flex; flex-direction: column; gap: 20px; animation: fadeIn .3s ease; }
-
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
-  @keyframes timerTick { from { width: 100%; } to { width: 0%; } }
-
-  /* ── Logo ── */
-  .logo {
-    font-family: var(--font-display);
-    font-size: 72px;
-    letter-spacing: 4px;
-    color: var(--accent);
-    text-align: center;
-    line-height: 1;
-    user-select: none;
-  }
-  .logo span { color: var(--text); }
-
-  .tagline {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    letter-spacing: 3px;
-    color: var(--muted);
-    text-align: center;
-    text-transform: uppercase;
-  }
-
-  /* ── Cards ── */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px;
-  }
-
-  .card-title {
-    font-family: var(--font-display);
-    font-size: 28px;
-    letter-spacing: 2px;
-    color: var(--accent);
-    margin-bottom: 16px;
-  }
-
-  /* ── Inputs ── */
-  input[type="text"], input[type="number"], input[type="file"] {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 15px;
-    outline: none;
-    transition: border-color .2s;
-  }
-  input:focus { border-color: var(--accent); }
-  input::placeholder { color: var(--muted); }
-
-  label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  /* ── Buttons ── */
-  .btn {
-    display: block;
-    width: 100%;
-    padding: 16px;
-    border-radius: 12px;
-    border: none;
-    font-family: var(--font-display);
-    font-size: 22px;
-    letter-spacing: 2px;
-    cursor: pointer;
-    transition: transform .1s, opacity .2s;
-    text-align: center;
-  }
-  .btn:active { transform: scale(0.97); }
-  .btn:disabled { opacity: .4; cursor: not-allowed; }
-
-  .btn-primary { background: var(--accent); color: var(--bg); }
-  .btn-primary:hover:not(:disabled) { opacity: .9; }
-
-  .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-
-  .btn-danger { background: var(--danger); color: #fff; }
-  .btn-sm {
-    display: inline-block;
-    width: auto;
-    padding: 8px 16px;
-    font-size: 14px;
-    border-radius: 8px;
-  }
-
-  /* ── Code display ── */
-  .join-code {
-    font-family: var(--font-display);
-    font-size: 64px;
-    letter-spacing: 12px;
-    color: var(--accent);
-    text-align: center;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-  }
-
-  /* ── Player list ── */
-  .player-list { display: flex; flex-direction: column; gap: 8px; }
-  .player-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px 16px;
-    animation: slideUp .25s ease;
-  }
-  .player-name { font-weight: 600; }
-  .player-score {
-    font-family: var(--font-mono);
-    font-size: 14px;
-    color: var(--accent);
-  }
-  .player-badge {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 6px;
-    background: var(--accent);
-    color: var(--bg);
-  }
-
-  /* ── Score big ── */
-  .score-display {
-    text-align: center;
-    font-family: var(--font-display);
-    font-size: 20px;
-    letter-spacing: 2px;
-    color: var(--muted);
-  }
-  .score-display span {
-    display: block;
-    font-size: 56px;
-    color: var(--accent);
-    line-height: 1;
-  }
-
-  /* ── Wager slider ── */
-  .wager-row {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-  input[type="range"] {
-    flex: 1;
-    -webkit-appearance: none;
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    outline: none;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-  }
-  .wager-amount {
-    font-family: var(--font-display);
-    font-size: 36px;
-    color: var(--accent);
-    min-width: 100px;
-    text-align: right;
-    letter-spacing: 2px;
-  }
-
-  /* ── Timer bar ── */
-  .timer-wrap {
-    height: 6px;
-    background: var(--border);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .timer-bar {
-    height: 100%;
-    background: var(--accent);
-    border-radius: 3px;
-    transition: background .5s;
-  }
-  .timer-num {
-    font-family: var(--font-display);
-    font-size: 20px;
-    color: var(--accent);
-    text-align: right;
-    letter-spacing: 2px;
-  }
-
-  /* ── Options ── */
-  .options { display: flex; flex-direction: column; gap: 10px; }
-  .option {
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 20px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 16px;
-    transition: border-color .15s, background .15s, transform .1s;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .option:hover:not(.disabled) { border-color: var(--accent); background: #1e1e38; transform: translateX(4px); }
-  .option.selected { border-color: var(--accent2); background: #0e2228; }
-  .option.correct  { border-color: var(--success); background: #0e2818; }
-  .option.wrong    { border-color: var(--danger);  background: #280e0e; }
-  .option.disabled { cursor: default; }
-  .option-letter {
-    font-family: var(--font-display);
-    font-size: 20px;
-    color: var(--muted);
-    min-width: 24px;
-    letter-spacing: 1px;
-  }
-
-  /* ── Result reveal ── */
-  .result-icon {
-    font-family: var(--font-display);
-    font-size: 80px;
-    text-align: center;
-    letter-spacing: 4px;
-    animation: pop .4s ease;
-  }
-  .result-icon.win  { color: var(--success); }
-  .result-icon.lose { color: var(--danger); }
-
-  .delta {
-    font-family: var(--font-display);
-    font-size: 40px;
-    text-align: center;
-    letter-spacing: 3px;
-  }
-  .delta.pos { color: var(--success); }
-  .delta.neg { color: var(--danger); }
-
-  /* ── Leaderboard ── */
-  .lb-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 18px;
-    animation: slideUp .3s ease both;
-  }
-  .lb-row:nth-child(1) { border-color: #f0e040; animation-delay: .05s; }
-  .lb-row:nth-child(2) { border-color: #b0b0b0; animation-delay: .10s; }
-  .lb-row:nth-child(3) { border-color: #c07830; animation-delay: .15s; }
-  .lb-rank {
-    font-family: var(--font-display);
-    font-size: 28px;
-    color: var(--muted);
-    min-width: 36px;
-    letter-spacing: 1px;
-  }
-  .lb-row:nth-child(1) .lb-rank { color: #f0e040; }
-  .lb-row:nth-child(2) .lb-rank { color: #c0c0c0; }
-  .lb-row:nth-child(3) .lb-rank { color: #c07830; }
-  .lb-name { font-weight: 700; flex: 1; }
-  .lb-score { font-family: var(--font-mono); font-size: 16px; color: var(--accent); }
-
-  /* ── Status dots ── */
-  .status-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .status-dot {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: var(--muted);
-    background: var(--surface);
-    border-radius: 20px;
-    padding: 4px 12px;
-    border: 1px solid var(--border);
-  }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); }
-  .dot.done { background: var(--success); }
-  .dot.waiting { background: var(--accent); animation: pulse 1s infinite; }
-
-  /* ── Error toast ── */
-  #toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: var(--danger);
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
-    transition: transform .3s ease;
-    z-index: 999;
-    white-space: nowrap;
-  }
-  #toast.show { transform: translateX(-50%) translateY(0); }
-
-  /* ── Misc ── */
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 0;
-  }
-  .q-counter {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--muted);
-    text-align: right;
-    letter-spacing: 1px;
-  }
-  .wait-msg {
-    text-align: center;
-    font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--muted);
-    animation: pulse 2s infinite;
-  }
-  .host-controls { display: flex; flex-direction: column; gap: 10px; }
-  .host-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: var(--muted);
-    text-transform: uppercase;
-    text-align: center;
-    margin-bottom: 4px;
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070f;--surface:#0f0f1c;--card:#141428;--border:#252545;
+  --accent:#f5e642;--teal:#3fecd5;--danger:#ff5050;--success:#3fd882;
+  --text:#eeeef8;--muted:#55558a;
+  --fd:'Bebas Neue',sans-serif;--fb:'Manrope',sans-serif;--fm:'DM Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--fb);font-size:16px}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(245,230,66,.07),transparent)}
+#app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:24px 16px}
+.screen{display:none;width:100%;max-width:500px;flex-direction:column;gap:18px}
+.screen.active{display:flex;animation:up .3s ease}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pop{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes shine{from{left:-100%}to{left:150%}}
+.logo{font-family:var(--fd);font-size:80px;letter-spacing:6px;color:var(--accent);text-align:center;line-height:1;user-select:none}
+.logo em{color:var(--text);font-style:normal}
+.sub{font-family:var(--fm);font-size:11px;letter-spacing:3px;color:var(--muted);text-align:center;text-transform:uppercase}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px}
+.card-title{font-family:var(--fd);font-size:24px;letter-spacing:2px;color:var(--accent);margin-bottom:12px}
+label{display:block;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+input[type=file]{width:100%;background:var(--surface);border:1px dashed var(--border);border-radius:10px;
+  padding:20px;color:var(--muted);font-family:var(--fm);font-size:13px;cursor:pointer;transition:border-color .2s}
+input[type=file]:hover{border-color:var(--accent);color:var(--text)}
+input[type=number]{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:13px 16px;color:var(--text);font-family:var(--fm);font-size:15px;outline:none;transition:border-color .2s}
+input[type=number]:focus{border-color:var(--accent)}
+input::placeholder{color:var(--muted)}
+.btn{display:block;width:100%;padding:15px;border-radius:12px;border:none;font-family:var(--fd);
+  font-size:22px;letter-spacing:2px;cursor:pointer;transition:transform .1s,opacity .15s;
+  position:relative;overflow:hidden}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn-primary{background:var(--accent);color:var(--bg)}
+.btn-primary::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:rgba(255,255,255,.25);transform:skewX(-20deg)}
+.btn-primary:hover:not(:disabled)::after{animation:shine .4s ease}
+.btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.wager-wrap{display:flex;align-items:center;gap:14px}
+input[type=range]{flex:1;-webkit-appearance:none;height:5px;background:var(--border);border-radius:3px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;
+  border-radius:50%;background:var(--accent);cursor:pointer;transition:transform .1s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+.wager-big{font-family:var(--fd);font-size:48px;letter-spacing:3px;color:var(--accent);min-width:110px;text-align:right}
+.score-lbl{font-family:var(--fm);font-size:11px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:4px}
+.score-num{font-family:var(--fd);font-size:64px;letter-spacing:4px;color:var(--accent);text-align:center;line-height:1}
+.timer-row{display:flex;justify-content:space-between;align-items:center}
+.timer-num{font-family:var(--fd);font-size:22px;color:var(--accent);letter-spacing:2px}
+.q-count{font-family:var(--fm);font-size:12px;color:var(--muted)}
+.timer-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:6px}
+.timer-fill{height:100%;background:var(--accent);border-radius:3px;transition:background .4s}
+.q-text{font-size:18px;font-weight:700;line-height:1.5;margin-bottom:18px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--surface);border:2px solid var(--border);border-radius:12px;
+  padding:16px 20px;cursor:pointer;font-weight:600;font-size:15px;
+  display:flex;align-items:center;gap:14px;
+  transition:border-color .15s,background .15s,transform .12s}
+.opt:hover:not(.locked){border-color:var(--accent);background:#1a1a30;transform:translateX(5px)}
+.opt.picked{border-color:var(--teal);background:#0d2228}
+.opt.correct{border-color:var(--success);background:#0b2215}
+.opt.wrong{border-color:var(--danger);background:#250b0b}
+.opt.locked{cursor:default}
+.opt-letter{font-family:var(--fd);font-size:20px;color:var(--muted);min-width:22px;letter-spacing:1px}
+.opt.correct .opt-letter{color:var(--success)}
+.opt.wrong   .opt-letter{color:var(--danger)}
+.opt.picked  .opt-letter{color:var(--teal)}
+.result-word{font-family:var(--fd);font-size:72px;text-align:center;letter-spacing:4px;animation:pop .4s ease}
+.result-word.win{color:var(--success)}
+.result-word.lose{color:var(--danger)}
+.delta{font-family:var(--fd);font-size:44px;text-align:center;letter-spacing:3px}
+.delta.pos{color:var(--success)}
+.delta.neg{color:var(--danger)}
+.progress-track{height:3px;background:var(--border);border-radius:2px}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease}
+.recap-row{display:flex;align-items:center;gap:14px;background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;padding:12px 16px;
+  animation:up .3s ease both}
+.recap-num{font-family:var(--fd);font-size:22px;color:var(--muted);min-width:28px}
+.recap-q{font-family:var(--fb);font-size:13px;flex:1;color:var(--muted);line-height:1.4}
+.recap-delta{font-family:var(--fd);font-size:18px;letter-spacing:1px}
+.recap-delta.pos{color:var(--success)}
+.recap-delta.neg{color:var(--danger)}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--danger);color:#fff;padding:12px 24px;border-radius:10px;
+  font-weight:700;font-size:14px;transition:transform .3s ease;z-index:999;white-space:nowrap}
+#toast.show{transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- ─── Home ─── -->
-  <div id="screen-home" class="screen">
+  <!-- HOME -->
+  <div id="s-home" class="screen">
     <div>
-      <div class="logo">RISK<span>IT</span></div>
-      <div class="tagline">wager everything · trust nothing</div>
+      <div class="logo">RISK<em>IT</em></div>
+      <div class="sub">wager everything · trust nothing</div>
     </div>
-    <button class="btn btn-primary" onclick="showScreen('create')">Create Game</button>
-    <button class="btn btn-secondary" onclick="showScreen('join')">Join Game</button>
+    <button class="btn btn-primary" onclick="startGame()">Play</button>
   </div>
 
-  <!-- ─── Create ─── -->
-  <div id="screen-create" class="screen">
-    <div class="logo" style="font-size:48px">CREATE</div>
-    <div class="card">
-      <label>Your nickname</label>
-      <input type="text" id="create-nickname" placeholder="enter nickname" maxlength="20" onkeydown="if(event.key==='Enter')createGame()">
-    </div>
-    <button class="btn btn-primary" onclick="createGame()">Create Game</button>
-    <button class="btn btn-secondary" onclick="showScreen('home')">Back</button>
-  </div>
-
-  <!-- ─── Join ─── -->
-  <div id="screen-join" class="screen">
-    <div class="logo" style="font-size:48px">JOIN</div>
-    <div class="card" style="gap:16px;display:flex;flex-direction:column">
-      <div>
-        <label>Game code</label>
-        <input type="text" id="join-code" placeholder="XXXXXX" maxlength="6" style="text-transform:uppercase;letter-spacing:4px;font-size:20px">
-      </div>
-      <div>
-        <label>Nickname</label>
-        <input type="text" id="join-nickname" placeholder="enter nickname" maxlength="20">
-      </div>
-    </div>
-    <button class="btn btn-primary" onclick="joinGame()">Join</button>
-    <button class="btn btn-secondary" onclick="showScreen('home')">Back</button>
-  </div>
-
-  <!-- ─── Lobby ─── -->
-  <div id="screen-lobby" class="screen">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div class="logo" style="font-size:40px">LOBBY</div>
-      <div id="lobby-code" class="join-code" style="font-size:36px;padding:12px 16px;letter-spacing:8px"></div>
-    </div>
-
-    <div class="card" id="host-upload" style="display:none">
-      <div class="card-title" style="font-size:20px">Upload Questions</div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <input type="file" id="q-file" accept=".json" onchange="loadFile(this)">
-      </div>
-      <div id="q-preview" style="margin-top:12px;font-family:var(--font-mono);font-size:13px;color:var(--muted)"></div>
-      <div style="margin-top:12px">
-        <label>Timer per question (seconds)</label>
-        <input type="number" id="global-timer" value="30" min="5" max="120" style="width:100px">
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div class="card-title" style="font-size:20px;margin:0">Players</div>
-        <div id="lobby-count" style="font-family:var(--font-mono);font-size:13px;color:var(--muted)"></div>
-      </div>
-      <div class="player-list" id="lobby-players"></div>
-    </div>
-
-    <div id="host-start-wrap" style="display:none">
-      <button class="btn btn-primary" id="start-btn" onclick="startGame()" disabled>Start Game</button>
-    </div>
-    <div id="lobby-wait" class="wait-msg">Waiting for host to start...</div>
-  </div>
-
-  <!-- ─── Wager ─── -->
-  <div id="screen-wager" class="screen">
-    <div>
-      <div class="logo" style="font-size:40px">WAGER</div>
-      <div class="tagline" id="wager-subline">Question incoming — place your bet</div>
-    </div>
-    <div class="card">
-      <div class="score-display">Your score<span id="wager-score">0</span></div>
-    </div>
-    <div class="card">
-      <div style="margin-bottom:16px">
-        <label>How much do you risk?</label>
-        <div class="wager-row">
-          <input type="range" id="wager-range" min="0" value="0" oninput="syncWager(this.value,'range')">
-          <div class="wager-amount" id="wager-disp">0</div>
-        </div>
-        <input type="number" id="wager-input" min="0" value="0" style="margin-top:10px" oninput="syncWager(this.value,'input')" placeholder="or type amount">
-      </div>
-      <button class="btn btn-primary" id="wager-btn" onclick="submitWager()">Lock In Wager</button>
-    </div>
-    <div class="status-row" id="wager-status"></div>
-    <div id="wager-locked" class="wait-msg" style="display:none">Wager locked — waiting for host to reveal question...</div>
-  </div>
-
-  <!-- ─── Question ─── -->
-  <div id="screen-question" class="screen">
+  <!-- WAGER -->
+  <div id="s-wager" class="screen">
     <div style="display:flex;justify-content:space-between;align-items:center">
-      <div class="timer-num" id="timer-num">30</div>
-      <div class="q-counter" id="q-counter"></div>
+      <div style="font-family:var(--fd);font-size:36px;letter-spacing:2px;color:var(--accent)">WAGER</div>
+      <div class="q-count" id="w-count"></div>
     </div>
-    <div class="timer-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+    <div class="progress-track"><div class="progress-fill" id="w-progress"></div></div>
     <div class="card">
-      <div id="q-text" style="font-size:18px;font-weight:700;line-height:1.4"></div>
+      <div class="score-lbl">Current score</div>
+      <div class="score-num" id="w-score">1000</div>
     </div>
-    <div class="options" id="q-options"></div>
-    <div class="wait-msg" id="q-wait" style="display:none">Answer locked in — waiting for results...</div>
+    <div class="card" style="display:flex;flex-direction:column;gap:14px">
+      <label>How much do you risk?</label>
+      <div class="wager-wrap">
+        <input type="range" id="w-range" min="0" value="0" oninput="syncW(this.value,'r')">
+        <div class="wager-big" id="w-disp">0</div>
+      </div>
+      <input type="number" id="w-num" min="0" value="0" placeholder="or type amount" oninput="syncW(this.value,'n')">
+      <button class="btn btn-primary" onclick="lockWager()">Lock In Wager</button>
+    </div>
   </div>
 
-  <!-- ─── Results ─── -->
-  <div id="screen-results" class="screen">
-    <div class="result-icon" id="result-icon">CORRECT</div>
-    <div class="delta" id="result-delta"></div>
+  <!-- QUESTION -->
+  <div id="s-question" class="screen">
+    <div class="timer-row">
+      <div class="timer-num" id="t-num">30</div>
+      <div class="q-count" id="q-count"></div>
+    </div>
+    <div class="timer-track"><div class="timer-fill" id="t-fill"></div></div>
     <div class="card">
-      <div class="score-display">New score<span id="result-score">0</span></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="opts" id="q-opts"></div>
     </div>
-    <div class="card">
-      <div class="card-title" style="font-size:18px">Scores</div>
-      <div class="player-list" id="results-players"></div>
-    </div>
-    <div id="host-next-wrap" style="display:none" class="host-controls">
-      <div class="host-label">Host controls</div>
-      <button class="btn btn-primary" onclick="nextQuestion()">Next Question</button>
-    </div>
-    <div class="wait-msg" id="results-wait">Waiting for host...</div>
   </div>
 
-  <!-- ─── End ─── -->
-  <div id="screen-end" class="screen">
-    <div class="logo" style="font-size:56px;text-align:center">GAME<span>OVER</span></div>
+  <!-- RESULT -->
+  <div id="s-result" class="screen">
+    <div class="result-word" id="r-word"></div>
+    <div class="delta" id="r-delta"></div>
     <div class="card">
-      <div class="card-title" style="font-size:22px;text-align:center">Leaderboard</div>
-      <div id="lb-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div class="score-lbl">Score</div>
+      <div class="score-num" id="r-score"></div>
     </div>
-    <div id="host-end-controls" style="display:none" class="host-controls">
-      <div class="host-label">Host controls</div>
-      <button class="btn btn-secondary" onclick="resetGame()">Play Again (reset)</button>
-      <button class="btn btn-danger" onclick="deleteGame()">Delete Game</button>
+    <div class="card">
+      <div class="card-title" style="font-size:18px">Answer</div>
+      <div class="opts" id="r-opts"></div>
     </div>
-    <button class="btn btn-secondary" onclick="leaveGame()">Leave</button>
+    <button class="btn btn-primary" id="r-next" onclick="nextQuestion()">Next Question</button>
+  </div>
+
+  <!-- END -->
+  <div id="s-end" class="screen">
+    <div class="logo" style="font-size:56px">GAME<em>!</em></div>
+    <div class="card">
+      <div class="score-lbl">Final score</div>
+      <div class="score-num" id="end-score"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="font-size:20px">Recap</div>
+      <div id="end-recap" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div>
+    </div>
+    <button class="btn btn-primary" onclick="playAgain()">Play Again</button>
   </div>
 
 </div>
-
 <div id="toast"></div>
-
 <script>
-// ─── Config — replace with your worker URL ──────────────────────────────────
-const API = 'https://win-or-lose.jaidenkumar14-469.workers.dev';
+const TIMER_SECS = 30; // seconds per question
 
-// ─── State ──────────────────────────────────────────────────────────────────
-let token     = localStorage.getItem('riskit_token') || null;
-let gameCode  = localStorage.getItem('riskit_code')  || null;
-let isHost    = false;
-let myNick    = '';
-let pollTimer = null;
-let timerAnim = null;
-let lastStatus = null;
-let loadedQuestions = null;
-let wagerLocked = false;
-let myAnswerIndex = null;
-let lastGameState = null;
-
-// ─── Screens ─────────────────────────────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
-}
-
-function toast(msg, dur = 3000) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), dur);
-}
-
-// ─── API ─────────────────────────────────────────────────────────────────────
-async function api(method, params = {}) {
-  try {
-    if (method === 'GET') {
-      const qs = new URLSearchParams(params).toString();
-      const r  = await fetch(`${API}?${qs}`);
-      return r.json();
-    } else {
-      const r = await fetch(API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params),
-      });
-      return r.json();
-    }
-  } catch (e) {
-    toast('Connection error');
-    return { success: false, message: 'Connection error' };
+const QUESTIONS = [
+  {
+    question: "What is the capital of France?",
+    options: ["Berlin", "Madrid", "Paris", "Rome"],
+    correctIndex: 2
+  },
+  {
+    question: "How many sides does a hexagon have?",
+    options: ["5", "6", "7", "8"],
+    correctIndex: 1
+  },
+  {
+    question: "What is 12 × 12?",
+    options: ["124", "144", "132", "148"],
+    correctIndex: 1
   }
+];
+
+// --- nothing below here needs changing ---
+let questions = QUESTIONS;
+let qIndex=0, score=1000, wager=0;
+let timerInt=null, timerSecs=TIMER_SECS, answered=false, recap=[];
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
 }
-
-// ─── Session persistence ──────────────────────────────────────────────────────
-function saveSession() {
-  localStorage.setItem('riskit_token', token || '');
-  localStorage.setItem('riskit_code',  gameCode || '');
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),3000);
 }
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-function clearSession() {
-  token = null; gameCode = null; isHost = false; myNick = '';
-  localStorage.removeItem('riskit_token');
-  localStorage.removeItem('riskit_code');
-}
-
-// ─── Auth flows ───────────────────────────────────────────────────────────────
-async function createGame() {
-  const nick = document.getElementById('create-nickname').value.trim();
-  if (!nick) return toast('Enter a nickname');
-  const res = await api('POST', { type: 'create', nickname: nick });
-  if (!res.success) return toast(res.message);
-  token    = res.token;
-  gameCode = res.code;
-  isHost   = true;
-  myNick   = nick;
-  saveSession();
-  enterLobby();
-}
-
-async function joinGame() {
-  const code = document.getElementById('join-code').value.trim().toUpperCase();
-  const nick = document.getElementById('join-nickname').value.trim();
-  if (!code) return toast('Enter the game code');
-  if (!nick) return toast('Enter a nickname');
-
-  const check = await api('GET', { type: 'check-code', code });
-  if (!check.success) return toast(check.message);
-
-  const res = await api('POST', { type: 'join', code, nickname: nick });
-  if (!res.success) return toast(res.message);
-
-  token    = res.token;
-  gameCode = res.code;
-  isHost   = false;
-  myNick   = nick;
-  saveSession();
-  enterLobby();
-}
-
-// ─── Lobby ───────────────────────────────────────────────────────────────────
-function enterLobby() {
-  document.getElementById('lobby-code').textContent = gameCode;
-  if (isHost) {
-    document.getElementById('host-upload').style.display    = 'block';
-    document.getElementById('host-start-wrap').style.display = 'block';
-    document.getElementById('lobby-wait').style.display      = 'none';
-  }
-  showScreen('lobby');
-  startPolling();
-}
-
-function loadFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    try {
-      const q = JSON.parse(e.target.result);
-      if (!Array.isArray(q) || q.length === 0) return toast('Invalid questions file');
-      loadedQuestions = q;
-      document.getElementById('q-preview').textContent =
-        `✓ ${q.length} question${q.length > 1 ? 's' : ''} loaded`;
-      document.getElementById('start-btn').disabled = false;
-    } catch {
-      toast('Could not parse JSON file');
-    }
+function loadFile(input){
+  const file=input.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      if(!Array.isArray(d)||!d.length)return toast('Needs an array of questions');
+      for(const q of d)
+        if(!q.question||!Array.isArray(q.options)||typeof q.correctIndex!=='number')
+          return toast('Each question needs: question, options[], correctIndex');
+      questions=d;
+      const s=document.getElementById('file-status');
+      s.textContent=`✓ ${d.length} question${d.length>1?'s':''} loaded`;
+      s.style.color='var(--success)';
+      document.getElementById('play-btn').disabled=false;
+    }catch{toast('Could not parse file');}
   };
-  reader.readAsText(file);
+  r.readAsText(file);
 }
 
-async function startGame() {
-  if (!loadedQuestions) return toast('Upload a questions file first');
-  const timeLimit = parseInt(document.getElementById('global-timer').value) || 30;
-  const res = await api('POST', { type: 'start', token, code: gameCode, questions: loadedQuestions, timeLimit });
-  if (!res.success) return toast(res.message);
+function startGame(){
+  timerSecs=parseInt(document.getElementById('timer-setting').value)||30;
+  qIndex=0; score=1000; recap=[]; showWager();
 }
 
-function renderLobby(players) {
-  const list  = document.getElementById('lobby-players');
-  const count = document.getElementById('lobby-count');
-  count.textContent = `${players.length} player${players.length !== 1 ? 's' : ''}`;
-  list.innerHTML = players.map(p => `
-    <div class="player-item">
-      <div>
-        <span class="player-name">${esc(p.nickname)}</span>
-        ${p.isHost ? '<span class="player-badge" style="margin-left:8px">HOST</span>' : ''}
-      </div>
-      ${isHost && !p.isHost ? `<button class="btn btn-danger btn-sm" onclick="kickPlayer('${esc(p.nickname)}')">Kick</button>` : ''}
-    </div>
-  `).join('');
+function showWager(){
+  const half=Math.floor(score/2);
+  document.getElementById('w-count').textContent=`${qIndex+1} / ${questions.length}`;
+  document.getElementById('w-score').textContent=score.toLocaleString();
+  document.getElementById('w-progress').style.width=((qIndex/questions.length)*100)+'%';
+  const rng=document.getElementById('w-range'), num=document.getElementById('w-num');
+  rng.max=score; rng.value=half;
+  num.max=score; num.value=half;
+  document.getElementById('w-disp').textContent=half;
+  wager=half; show('wager');
 }
 
-async function kickPlayer(nick) {
-  const res = await api('POST', { type: 'kick', token, code: gameCode, targetNickname: nick });
-  if (!res.success) toast(res.message);
+function syncW(val,from){
+  const max=parseInt(document.getElementById('w-range').max)||score;
+  val=Math.max(0,Math.min(max,parseInt(val)||0));
+  if(from!=='r')document.getElementById('w-range').value=val;
+  if(from!=='n')document.getElementById('w-num').value=val;
+  document.getElementById('w-disp').textContent=val;
+  wager=val;
 }
 
-// ─── Wager screen ─────────────────────────────────────────────────────────────
-function enterWager(game) {
-  wagerLocked = game.myWager !== null;
-  const score = game.myScore;
-  document.getElementById('wager-score').textContent = score.toLocaleString();
-  document.getElementById('q-counter').textContent   =
-    `${game.questionIndex + 1} / ${game.totalQuestions}`;
-
-  const range = document.getElementById('wager-range');
-  const input = document.getElementById('wager-input');
-  range.max   = score;
-  range.value = wagerLocked ? game.myWager : Math.floor(score / 2);
-  input.max   = score;
-  input.value = range.value;
-  document.getElementById('wager-disp').textContent = range.value;
-
-  document.getElementById('wager-btn').disabled     = wagerLocked;
-  document.getElementById('wager-locked').style.display = wagerLocked ? 'block' : 'none';
-
-  renderStatusDots(game.players, 'hasWagered', 'wager-status');
-  showScreen('wager');
+function lockWager(){
+  wager=Math.max(0,Math.min(score,parseInt(document.getElementById('w-num').value)||0));
+  showQuestion();
 }
 
-function syncWager(val, from) {
-  if (wagerLocked) return;
-  const score = parseInt(document.getElementById('wager-range').max);
-  val = Math.max(0, Math.min(score, parseInt(val) || 0));
-  if (from !== 'range')  document.getElementById('wager-range').value = val;
-  if (from !== 'input') document.getElementById('wager-input').value  = val;
-  document.getElementById('wager-disp').textContent = val;
+function showQuestion(){
+  answered=false;
+  const q=questions[qIndex], lets=['A','B','C','D','E'];
+  document.getElementById('q-count').textContent=`${qIndex+1} / ${questions.length}`;
+  document.getElementById('q-text').textContent=q.question;
+  document.getElementById('q-opts').innerHTML=q.options.map((o,i)=>`
+    <div class="opt" id="opt-${i}" onclick="pick(${i})">
+      <span class="opt-letter">${lets[i]}</span><span>${esc(o)}</span>
+    </div>`).join('');
+  startTimer(timerSecs); show('question');
 }
 
-async function submitWager() {
-  const wager = parseInt(document.getElementById('wager-range').value);
-  const res = await api('POST', { type: 'wager', token, code: gameCode, wager });
-  if (!res.success) return toast(res.message);
-  wagerLocked = true;
-  document.getElementById('wager-btn').disabled = true;
-  document.getElementById('wager-locked').style.display = 'block';
-
-  if (isHost) {
-    // Host also gets a reveal button after wagering
-    showHostReveal();
-  }
+function startTimer(secs){
+  clearInterval(timerInt);
+  let left=secs;
+  const fill=document.getElementById('t-fill'), num=document.getElementById('t-num');
+  fill.style.width='100%'; fill.style.background='var(--accent)';
+  num.style.color='var(--accent)'; num.textContent=left;
+  timerInt=setInterval(()=>{
+    left--;
+    const pct=(left/secs)*100;
+    const col=pct>40?'var(--accent)':pct>20?'#f0a030':'var(--danger)';
+    fill.style.width=pct+'%'; fill.style.background=col;
+    num.style.color=col; num.textContent=left;
+    if(left<=0){clearInterval(timerInt); timeUp();}
+  },1000);
 }
 
-function showHostReveal() {
-  const existing = document.getElementById('host-reveal-wrap');
-  if (existing) return;
-  const wrap = document.createElement('div');
-  wrap.id = 'host-reveal-wrap';
-  wrap.className = 'host-controls';
-  wrap.innerHTML = `
-    <div class="host-label">Host controls</div>
-    <button class="btn btn-primary" onclick="revealQuestion()">Reveal Question</button>
-    <button class="btn btn-danger" onclick="endGame()">End Game Early</button>
-  `;
-  document.getElementById('screen-wager').appendChild(wrap);
+function timeUp(){
+  if(answered)return;
+  answered=true;
+  document.querySelectorAll('.opt').forEach(o=>o.classList.add('locked'));
+  resolve(-1);
 }
 
-async function revealQuestion() {
-  const res = await api('POST', { type: 'reveal', token, code: gameCode });
-  if (!res.success) toast(res.message);
+function pick(i){
+  if(answered)return;
+  answered=true; clearInterval(timerInt);
+  document.querySelectorAll('.opt').forEach(o=>o.classList.add('locked'));
+  document.getElementById('opt-'+i).classList.add('picked');
+  resolve(i);
 }
 
-// ─── Question screen ──────────────────────────────────────────────────────────
-function enterQuestion(game) {
-  myAnswerIndex = game.myAnswer;
-  const q = game.currentQuestion;
-
-  document.getElementById('q-text').textContent    = q.question;
-  document.getElementById('q-counter').textContent = `${game.questionIndex + 1} / ${game.totalQuestions}`;
-  document.getElementById('q-wait').style.display  = myAnswerIndex !== null ? 'block' : 'none';
-
-  // Options
-  const letters = ['A', 'B', 'C', 'D', 'E'];
-  document.getElementById('q-options').innerHTML = q.options.map((opt, i) => `
-    <div class="option ${myAnswerIndex !== null ? 'disabled' : ''} ${myAnswerIndex === i ? 'selected' : ''}"
-         onclick="submitAnswer(${i})" id="opt-${i}">
-      <span class="option-letter">${letters[i]}</span>
-      <span>${esc(opt)}</span>
-    </div>
-  `).join('');
-
-  // Timer
-  startTimer(q.timerEnd);
-  showScreen('question');
+function resolve(picked){
+  const q=questions[qIndex];
+  const correct=picked===q.correctIndex;
+  const delta=correct?wager:-wager;
+  score=Math.max(0,score+delta);
+  recap.push({question:q.question,correct,wager,delta});
+  setTimeout(()=>showResult(correct,delta,picked,q),600);
 }
 
-function startTimer(timerEnd) {
-  clearInterval(timerAnim);
-  if (!timerEnd) return;
-  const end = new Date(timerEnd).getTime();
-  const totalMs = end - Date.now();
-  if (totalMs <= 0) return;
-
-  const bar = document.getElementById('timer-bar');
-  const num = document.getElementById('timer-num');
-
-  timerAnim = setInterval(() => {
-    const left = Math.max(0, end - Date.now());
-    const pct  = (left / totalMs) * 100;
-    bar.style.width = pct + '%';
-    bar.style.background = pct > 40 ? 'var(--accent)' : pct > 20 ? '#f0a040' : 'var(--danger)';
-    num.textContent = Math.ceil(left / 1000);
-    if (left <= 0) clearInterval(timerAnim);
-  }, 100);
+function showResult(correct,delta,picked,q){
+  const lets=['A','B','C','D','E'];
+  const label=picked===-1?'TIME UP':correct?'CORRECT':'WRONG';
+  document.getElementById('r-word').textContent=label;
+  document.getElementById('r-word').className='result-word '+(correct?'win':'lose');
+  document.getElementById('r-delta').textContent=(delta>=0?'+':'')+delta.toLocaleString();
+  document.getElementById('r-delta').className='delta '+(delta>=0?'pos':'neg');
+  document.getElementById('r-score').textContent=score.toLocaleString();
+  document.getElementById('r-opts').innerHTML=q.options.map((o,i)=>`
+    <div class="opt locked ${i===q.correctIndex?'correct':(i===picked&&!correct?'wrong':'')}">
+      <span class="opt-letter">${lets[i]}</span><span>${esc(o)}</span>
+    </div>`).join('');
+  const last=qIndex>=questions.length-1;
+  document.getElementById('r-next').textContent=last?'See Results':'Next Question';
+  show('result');
 }
 
-async function submitAnswer(index) {
-  if (myAnswerIndex !== null) return;
-  const res = await api('POST', { type: 'answer', token, code: gameCode, answerIndex: index });
-  if (!res.success) return toast(res.message);
-  myAnswerIndex = index;
-  document.querySelectorAll('.option').forEach(o => o.classList.add('disabled'));
-  document.getElementById(`opt-${index}`).classList.add('selected');
-  document.getElementById('q-wait').style.display = 'block';
+function nextQuestion(){
+  qIndex++;
+  if(qIndex>=questions.length) showEnd(); else showWager();
 }
 
-// ─── Results screen ───────────────────────────────────────────────────────────
-function enterResults(game) {
-  const q = game.currentQuestion;
-  const correct = myAnswerIndex === q.correctIndex;
-  const wager   = game.myWager ?? 0;
-
-  const icon  = document.getElementById('result-icon');
-  const delta = document.getElementById('result-delta');
-
-  icon.textContent  = correct ? 'CORRECT' : 'WRONG';
-  icon.className    = `result-icon ${correct ? 'win' : 'lose'}`;
-  delta.textContent = (correct ? '+' : '-') + wager.toLocaleString();
-  delta.className   = `delta ${correct ? 'pos' : 'neg'}`;
-  document.getElementById('result-score').textContent = game.myScore.toLocaleString();
-
-  // Highlight options
-  const letters = ['A', 'B', 'C', 'D', 'E'];
-  document.getElementById('q-options').innerHTML = q.options.map((opt, i) => `
-    <div class="option disabled ${i === q.correctIndex ? 'correct' : (i === myAnswerIndex && !correct ? 'wrong' : '')}">
-      <span class="option-letter">${letters[i]}</span>
-      <span>${esc(opt)}</span>
-    </div>
-  `).join('');
-
-  // Scores
-  const sorted = [...game.players].filter(p => !p.kicked).sort((a, b) => b.score - a.score);
-  document.getElementById('results-players').innerHTML = sorted.map(p => `
-    <div class="player-item">
-      <span class="player-name">${esc(p.nickname)}</span>
-      <span class="player-score">${p.score.toLocaleString()}</span>
-    </div>
-  `).join('');
-
-  const hostWrap = document.getElementById('host-next-wrap');
-  const waitMsg  = document.getElementById('results-wait');
-  hostWrap.style.display = isHost ? 'block' : 'none';
-  waitMsg.style.display  = isHost ? 'none'  : 'block';
-
-  showScreen('results');
+function showEnd(){
+  document.getElementById('end-score').textContent=score.toLocaleString();
+  document.getElementById('end-recap').innerHTML=recap.map((r,i)=>`
+    <div class="recap-row" style="animation-delay:${i*.05}s">
+      <div class="recap-num">${i+1}</div>
+      <div class="recap-q">${esc(r.question.length>50?r.question.slice(0,50)+'…':r.question)}</div>
+      <div class="recap-delta ${r.delta>=0?'pos':'neg'}">${r.delta>=0?'+':''}${r.delta.toLocaleString()}</div>
+    </div>`).join('');
+  show('end');
 }
 
-async function nextQuestion() {
-  const res = await api('POST', { type: 'next', token, code: gameCode });
-  if (!res.success) toast(res.message);
-}
+function playAgain(){ qIndex=0; score=1000; recap=[]; show('home'); }
 
-// ─── End screen ───────────────────────────────────────────────────────────────
-function enterEnd(game) {
-  const lb = game.leaderboard || [];
-  const medals = ['1ST', '2ND', '3RD'];
-  document.getElementById('lb-list').innerHTML = lb.map((entry, i) => `
-    <div class="lb-row">
-      <div class="lb-rank">${medals[i] ?? '#' + entry.rank}</div>
-      <div class="lb-name">${esc(entry.nickname)}</div>
-      <div class="lb-score">${entry.score.toLocaleString()}</div>
-    </div>
-  `).join('');
-
-  document.getElementById('host-end-controls').style.display = isHost ? 'block' : 'none';
-  showScreen('end');
-}
-
-async function resetGame() {
-  const res = await api('POST', { type: 'reset', token, code: gameCode });
-  if (!res.success) return toast(res.message);
-  loadedQuestions = null;
-  wagerLocked     = false;
-  myAnswerIndex   = null;
-  lastStatus      = null;
-  enterLobby();
-}
-
-async function endGame() {
-  const res = await api('POST', { type: 'end', token, code: gameCode });
-  if (!res.success) toast(res.message);
-}
-
-async function deleteGame() {
-  await api('POST', { type: 'delete', token, code: gameCode });
-  clearSession();
-  stopPolling();
-  showScreen('home');
-}
-
-async function leaveGame() {
-  await api('POST', { type: 'leave', token, code: gameCode });
-  clearSession();
-  stopPolling();
-  showScreen('home');
-}
-
-// ─── Polling ──────────────────────────────────────────────────────────────────
-function startPolling() { stopPolling(); pollTimer = setInterval(poll, 1500); poll(); }
-function stopPolling()  { clearInterval(pollTimer); }
-
-async function poll() {
-  const res = await api('GET', { type: 'game', token, code: gameCode });
-  if (!res.success) { toast(res.message); return; }
-  if (res.kicked)   { toast('You have been kicked'); clearSession(); stopPolling(); showScreen('home'); return; }
-
-  const g = res.game ?? res;
-  isHost  = res.isHost;
-  lastGameState = g;
-
-  const status = g.status;
-
-  if (status === 'waiting') {
-    renderLobby(g.players);
-    if (lastStatus !== 'waiting') showScreen('lobby');
-  } else if (status === 'wagering') {
-    if (lastStatus !== 'wagering') { wagerLocked = false; myAnswerIndex = null; }
-    enterWager(g);
-    // Update status dots without re-rendering whole screen if already there
-  } else if (status === 'question') {
-    if (lastStatus !== 'question') enterQuestion(g);
-    // Update timer
-    if (lastStatus === 'question') {
-      renderStatusDots(g.players, 'hasAnswered', null);
-    }
-  } else if (status === 'results') {
-    if (lastStatus !== 'results') enterResults(g);
-  } else if (status === 'ended') {
-    stopPolling();
-    enterEnd(g);
-  }
-
-  lastStatus = status;
-}
-
-// ─── Util ─────────────────────────────────────────────────────────────────────
-function renderStatusDots(players, key, containerId) {
-  if (!containerId) return;
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = players.filter(p => !p.kicked).map(p => `
-    <div class="status-dot">
-      <span class="dot ${p[key] ? 'done' : 'waiting'}"></span>
-      ${esc(p.nickname)}
-    </div>
-  `).join('');
-}
-
-function esc(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
-// ─── Boot ─────────────────────────────────────────────────────────────────────
-if (token && gameCode) {
-  // Try to resume session
-  (async () => {
-    const res =  await api('GET', { type: 'game', token, code: gameCode });
-    if (!res.success) { clearSession(); showScreen('home'); return; }
-    isHost = res.isHost;
-    if (res.game.status === 'waiting') {
-      enterLobby();
-    } else {
-      startPolling();
-    }
-  })();
-} else {
-  showScreen('home');
-}
+show('home');
 </script>
 </body>
 </html>

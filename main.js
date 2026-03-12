@@ -1,7 +1,7 @@
-const TIMER_SECS = 30; // seconds per question
-const MAX_WAGER_PCT  = 75
-const STARTING_SCORE = 1000
-const MIN_SCORE      = 0;
+const TIMER_SECS = 20; // seconds per question
+const MAX_WAGER_PCT  = 50;
+const STARTING_SCORE = 1000;
+const MIN_SCORE      = -500;
 
 const QUESTIONS = [
   {
@@ -26,6 +26,13 @@ let questions = QUESTIONS;
 let qIndex=0, score=1000, wager=0;
 let timerInt=null, timerSecs=TIMER_SECS, answered=false, recap=[];
 
+function getMaxWagerPct() {
+  if (score < 0) {
+    return 100; // comeback mode
+  }
+  return MAX_WAGER_PCT;
+}
+
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('s-'+id).classList.add('active');
@@ -38,11 +45,12 @@ function toast(msg){
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
 function startGame(){
-  qIndex=0; score=1000; recap=[]; showWager();
+  qIndex=0; score=STARTING_SCORE; recap=[]; showWager();
 }
 
 function showWager(){
-  const maxWager = Math.floor(score * (MAX_WAGER_PCT / 100));
+  const pct      = getMaxWagerPct();
+const maxWager = Math.floor(Math.abs(score) * (pct / 100));
   const half     = Math.floor(maxWager / 2);
   document.getElementById('w-count').textContent=`${qIndex+1} / ${questions.length}`;
   document.getElementById('w-score').textContent=score.toLocaleString();
@@ -52,7 +60,7 @@ function showWager(){
   num.max=maxWager; num.value=half;
   document.getElementById('w-disp').textContent=half;
   wager=half; 
-  document.getElementById('w-max-hint').textContent=`max ${MAX_WAGER_PCT}% = ${maxWager.toLocaleString()}`;
+  document.getElementById('w-max-hint').textContent=`max ${pct}% = ${maxWager.toLocaleString()}`;
   show('wager');
 }
 
@@ -66,7 +74,7 @@ function syncW(val,from){
 }
 
 function lockWager(){
-  const maxWager=Math.floor(score*(MAX_WAGER_PCT/100));
+  const maxWager=Math.floor(Math.abs(score)*(getMaxWagerPct()/100));
   wager=Math.max(0,Math.min(maxWager,parseInt(document.getElementById('w-num').value)||0));
   showQuestion();
 }
@@ -156,6 +164,6 @@ function showEnd(){
   show('end');
 }
 
-function playAgain(){ qIndex=0; score=1000; recap=[]; show('home'); }
+function playAgain(){ qIndex=0; score=STARTING_SCORE; recap=[]; show('home'); }
 
 show('home');

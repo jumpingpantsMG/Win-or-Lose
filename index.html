@@ -430,7 +430,7 @@
     <div class="logo" style="font-size:48px">CREATE</div>
     <div class="card">
       <label>Your nickname</label>
-      <input type="text" id="create-nickname" placeholder="enter nickname" maxlength="20" onkeydown="if(e.key==='Enter')createGame()">
+      <input type="text" id="create-nickname" placeholder="enter nickname" maxlength="20" onkeydown="if(event.key==='Enter')createGame()">
     </div>
     <button class="btn btn-primary" onclick="createGame()">Create Game</button>
     <button class="btn btn-secondary" onclick="showScreen('home')">Back</button>
@@ -989,7 +989,7 @@ function esc(str) {
 if (token && gameCode) {
   // Try to resume session
   (async () => {
-    const res = await api('GET', { type: 'game', token, code: gameCode });
+    const res =  await api('GET', { type: 'game', token, code: gameCode });
     if (!res.success) { clearSession(); showScreen('home'); return; }
     isHost = res.isHost;
     if (res.game.status === 'waiting') {

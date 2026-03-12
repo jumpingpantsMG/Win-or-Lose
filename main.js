@@ -1,4 +1,7 @@
 const TIMER_SECS = 30; // seconds per question
+const MAX_WAGER_PCT  = 75
+const STARTING_SCORE = 1000
+const MIN_SCORE      = 0;
 
 const QUESTIONS = [
   {
@@ -34,40 +37,23 @@ function toast(msg){
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 
-function loadFile(input){
-  const file=input.files[0]; if(!file)return;
-  const r=new FileReader();
-  r.onload=e=>{
-    try{
-      const d=JSON.parse(e.target.result);
-      if(!Array.isArray(d)||!d.length)return toast('Needs an array of questions');
-      for(const q of d)
-        if(!q.question||!Array.isArray(q.options)||typeof q.correctIndex!=='number')
-          return toast('Each question needs: question, options[], correctIndex');
-      questions=d;
-      const s=document.getElementById('file-status');
-      s.textContent=`✓ ${d.length} question${d.length>1?'s':''} loaded`;
-      s.style.color='var(--success)';
-      document.getElementById('play-btn').disabled=false;
-    }catch{toast('Could not parse file');}
-  };
-  r.readAsText(file);
-}
-
 function startGame(){
   qIndex=0; score=1000; recap=[]; showWager();
 }
 
 function showWager(){
-  const half=Math.floor(score/2);
+  const maxWager = Math.floor(score * (MAX_WAGER_PCT / 100));
+  const half     = Math.floor(maxWager / 2);
   document.getElementById('w-count').textContent=`${qIndex+1} / ${questions.length}`;
   document.getElementById('w-score').textContent=score.toLocaleString();
   document.getElementById('w-progress').style.width=((qIndex/questions.length)*100)+'%';
   const rng=document.getElementById('w-range'), num=document.getElementById('w-num');
-  rng.max=score; rng.value=half;
-  num.max=score; num.value=half;
+  rng.max=maxWager; rng.value=half;
+  num.max=maxWager; num.value=half;
   document.getElementById('w-disp').textContent=half;
-  wager=half; show('wager');
+  wager=half; 
+  document.getElementById('w-max-hint').textContent=`max ${MAX_WAGER_PCT}% = ${maxWager.toLocaleString()}`;
+  show('wager');
 }
 
 function syncW(val,from){
@@ -80,7 +66,8 @@ function syncW(val,from){
 }
 
 function lockWager(){
-  wager=Math.max(0,Math.min(score,parseInt(document.getElementById('w-num').value)||0));
+  const maxWager=Math.floor(score*(MAX_WAGER_PCT/100));
+  wager=Math.max(0,Math.min(maxWager,parseInt(document.getElementById('w-num').value)||0));
   showQuestion();
 }
 
@@ -131,7 +118,7 @@ function resolve(picked){
   const q=questions[qIndex];
   const correct=picked===q.correctIndex;
   const delta=correct?wager:-wager;
-  score=Math.max(0,score+delta);
+  score=Math.max(MIN_SCORE,score+delta);
   recap.push({question:q.question,correct,wager,delta});
   setTimeout(()=>showResult(correct,delta,picked,q),600);
 }

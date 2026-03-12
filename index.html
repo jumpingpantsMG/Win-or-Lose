@@ -32,7 +32,10 @@
       <div class="score-num" id="w-score">1000</div>
     </div>
     <div class="card" style="display:flex;flex-direction:column;gap:14px">
-      <label>How much do you risk?</label>
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+  <label style="margin:0">How much do you risk?</label>
+  <span id="w-max-hint" class="wager-max-hint"></span>
+</div>
       <div class="wager-wrap">
         <input type="range" id="w-range" min="0" value="0" oninput="syncW(this.value,'r')">
         <div class="wager-big" id="w-disp">0</div>

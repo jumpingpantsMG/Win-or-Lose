@@ -32,7 +32,7 @@ async function startSolo() {
   questions  = res.questions;
   timerSecs  = res.timerSecs;
   qIndex     = 0;
-  score      = STARTING_SCORE;
+  score      = res.startingScore;
   recap      = [];
   showWager();
 }
@@ -153,7 +153,16 @@ function showEnd(){
   show('end');
 }
 
-function playAgain(){ qIndex=0; score=STARTING_SCORE; recap=[]; show('home'); }
+async function playAgain() {
+  const res = await mpApi('GET', { type: 'questions' });
+  if (!res.success) return toast('Could not load questions');
+  questions = res.questions;
+  timerSecs = res.timerSecs;
+  qIndex    = 0;
+  score     = res.startingScore;
+  recap     = [];
+  show('home');
+}
 
 /* ============================================================
    MULTIPLAYER

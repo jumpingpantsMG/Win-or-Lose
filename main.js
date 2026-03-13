@@ -4,9 +4,9 @@ const MAX_WAGER_PCT  = 100;
 const MIN_SCORE      = 1;
 
 // --- nothing below here needs changing ---
-let questions = QUESTIONS;
+let questions = [];
 let qIndex=0, score=1000, wager=0;
-let timerInt=null, timerSecs=TIMER_SECS, answered=false, recap=[];
+let timerInt=null, timerSecs=30, answered=false, recap=[];
 
 function getMaxWagerPct() {
   if (score < 0) {

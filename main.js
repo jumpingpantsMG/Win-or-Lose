@@ -1,7 +1,7 @@
 const TIMER_SECS = 20; // seconds per question
-const MAX_WAGER_PCT  = 200;
+const MAX_WAGER_PCT  = 100;
 const STARTING_SCORE = 1000;
-const MIN_SCORE      = -500;
+const MIN_SCORE      = 1;
 
 const QUESTIONS = [
   {

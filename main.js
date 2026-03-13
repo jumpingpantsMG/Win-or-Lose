@@ -1,5 +1,5 @@
 const TIMER_SECS = 20; // seconds per question
-const MAX_WAGER_PCT  = 100;
+const MAX_WAGER_PCT  = 200;
 const STARTING_SCORE = 1000;
 const MIN_SCORE      = -500;
 
@@ -28,7 +28,7 @@ let timerInt=null, timerSecs=TIMER_SECS, answered=false, recap=[];
 
 function getMaxWagerPct() {
   if (score < 0) {
-    return 100; // comeback mode
+    return -MAX_WAGER_PCT
   }
   return MAX_WAGER_PCT;
 }

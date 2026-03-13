@@ -10,15 +10,20 @@ const QUESTIONS = [
     correctIndex: 1
   },
   {
-    question: "How many sides does a hexagon have?",
-    options: ["5", "6", "7", "8"],
-    correctIndex: 1
+    question: "True or False: the lag can get built up easily when using xcode or other developing apps?",
+    options: ["True", "False"],
+    correctIndex: 0
   },
   {
-    question: "What is 12 × 12?",
-    options: ["124", "144", "132", "148"],
-    correctIndex: 1
-  }
+    question: "How many active users does the mac have?",
+    options: ["50 million", "500 million", "5 billion", "100 million"],
+    correctIndex: 3
+  },
+  {
+    question: "The mac helps people navigate digital componets without...",
+    options: ["typing in coordinates", "understanding programming languages such as C++", "using a mouse or trackpad", "learning computer commands"],
+    correctIndex: 3
+  },
 ];
 
 // --- nothing below here needs changing ---

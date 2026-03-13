@@ -17,8 +17,156 @@
       <div class="logo">RISK<em>IT</em></div>
       <div class="sub">wager everything · trust nothing</div>
     </div>
-    <button class="btn btn-primary" onclick="startGame()">Play</button>
+    <button class="btn btn-primary" onclick="showScreen('host-create')">Host Game</button>
+  <button class="btn btn-secondary" onclick="showScreen('join')">Join Game</button>
+  <button class="btn btn-secondary" onclick="startSolo()">Play Solo</button>
   </div>
+
+  <!-- HOST CREATE -->
+<div id="s-host-create" class="screen">
+  <div class="logo" style="font-size:48px">HOST</div>
+  <div class="card" style="display:flex;flex-direction:column;gap:14px">
+    <div>
+      <label>Your nickname</label>
+      <input type="text" id="host-nickname" placeholder="enter nickname" maxlength="20" class="text-input">
+    </div>
+    <div class="join-role-row">
+      <button class="btn btn-secondary role-btn active" id="role-player" onclick="setRole('player')">Join as Player</button>
+      <button class="btn btn-secondary role-btn" id="role-spectator" onclick="setRole('spectator')">Spectate</button>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="createGame()">Create Game</button>
+  <button class="btn btn-secondary" onclick="showScreen('home')">Back</button>
+</div>
+
+<!-- JOIN -->
+<div id="s-join" class="screen">
+  <div class="logo" style="font-size:48px">JOIN</div>
+  <div class="card" style="display:flex;flex-direction:column;gap:14px">
+    <div>
+      <label>Game code</label>
+      <input type="text" id="join-code" placeholder="XXXXXX" maxlength="6" class="text-input code-input">
+    </div>
+    <div>
+      <label>Nickname</label>
+      <input type="text" id="join-nickname" placeholder="enter nickname" maxlength="20" class="text-input">
+    </div>
+    <div class="join-role-row">
+      <button class="btn btn-secondary role-btn active" id="join-role-player" onclick="setJoinRole('player')">Join as Player</button>
+      <button class="btn btn-secondary role-btn" id="join-role-spectator" onclick="setJoinRole('spectator')">Spectate</button>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="joinGame()">Join</button>
+  <button class="btn btn-secondary" onclick="showScreen('home')">Back</button>
+</div>
+
+<!-- LOBBY -->
+<div id="s-lobby" class="screen">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div class="logo" style="font-size:40px">LOBBY</div>
+    <div class="code-display" id="lobby-code"></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-title" style="font-size:18px;margin:0">Players</div>
+      <div id="lobby-count" class="q-count"></div>
+    </div>
+    <div class="player-list" id="lobby-players"></div>
+  </div>
+  <div id="host-start-wrap" style="display:none;flex-direction:column;gap:10px">
+    <div class="host-label">Host controls</div>
+    <button class="btn btn-primary" onclick="startGame()">Start Game</button>
+    <button class="btn btn-danger" onclick="deleteGame()">Delete Game</button>
+  </div>
+  <div class="wait-msg" id="lobby-wait">Waiting for host to start...</div>
+</div>
+
+<!-- MP WAGER -->
+<div id="s-mp-wager" class="screen">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div style="font-family:var(--fd);font-size:36px;letter-spacing:2px;color:var(--accent)">WAGER</div>
+    <div class="q-count" id="mp-w-count"></div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="mp-w-progress"></div></div>
+  <div class="card">
+    <div class="score-lbl">Your score</div>
+    <div class="score-num" id="mp-w-score"></div>
+  </div>
+  <div class="card" id="mp-wager-card" style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <label style="margin:0">How much do you risk?</label>
+    </div>
+    <div class="wager-wrap">
+      <input type="range" id="mp-w-range" min="0" value="0" oninput="mpSyncW(this.value,'r')">
+      <div class="wager-big" id="mp-w-disp">0</div>
+    </div>
+    <input type="number" id="mp-w-num" min="0" value="0" placeholder="or type amount" oninput="mpSyncW(this.value,'n')">
+    <button class="btn btn-primary" id="mp-wager-btn" onclick="submitWager()">Lock In Wager</button>
+  </div>
+  <div class="wait-msg" id="mp-wager-locked" style="display:none">Wager locked — waiting for host...</div>
+  <div class="status-dots" id="mp-wager-dots"></div>
+  <div id="mp-reveal-wrap" style="display:none;flex-direction:column;gap:10px">
+    <div class="host-label">Host controls</div>
+    <button class="btn btn-primary" onclick="revealQuestion()">Reveal Question</button>
+    <button class="btn btn-danger" onclick="endGameEarly()">End Game</button>
+  </div>
+  <div class="wait-msg" id="mp-spectator-msg" style="display:none">You are spectating — watching players wager...</div>
+</div>
+
+<!-- MP QUESTION -->
+<div id="s-mp-question" class="screen">
+  <div class="timer-row">
+    <div class="timer-num" id="mp-t-num">30</div>
+    <div class="q-count" id="mp-q-count"></div>
+  </div>
+  <div class="timer-track"><div class="timer-fill" id="mp-t-fill"></div></div>
+  <div class="card">
+    <div class="q-text" id="mp-q-text"></div>
+    <div class="opts" id="mp-q-opts"></div>
+  </div>
+  <div class="status-dots" id="mp-answer-dots"></div>
+  <div id="mp-close-wrap" style="display:none;flex-direction:column;gap:10px">
+    <div class="host-label">Host controls</div>
+    <button class="btn btn-primary" onclick="closeQuestion()">Close Question</button>
+  </div>
+</div>
+
+<!-- MP RESULTS -->
+<div id="s-mp-results" class="screen">
+  <div class="result-word" id="mp-r-word"></div>
+  <div class="delta" id="mp-r-delta"></div>
+  <div class="card">
+    <div class="score-lbl">Score</div>
+    <div class="score-num" id="mp-r-score"></div>
+  </div>
+  <div class="card">
+    <div class="card-title" style="font-size:18px">Answer</div>
+    <div class="opts" id="mp-r-opts"></div>
+  </div>
+  <div class="card">
+    <div class="card-title" style="font-size:18px">Scores</div>
+    <div class="player-list" id="mp-r-players"></div>
+  </div>
+  <div id="mp-next-wrap" style="display:none;flex-direction:column;gap:10px">
+    <div class="host-label">Host controls</div>
+    <button class="btn btn-primary" id="mp-next-btn" onclick="nextMpQuestion()">Next Question</button>
+  </div>
+  <div class="wait-msg" id="mp-r-wait">Waiting for host...</div>
+</div>
+
+<!-- MP END -->
+<div id="s-mp-end" class="screen">
+  <div class="logo" style="font-size:56px">GAME<em>!</em></div>
+  <div class="card">
+    <div class="card-title" style="font-size:20px;text-align:center">Leaderboard</div>
+    <div id="mp-lb-list" style="display:flex;flex-direction:column;gap:8px;margin-top:4px"></div>
+  </div>
+  <div id="mp-end-host" style="display:none;flex-direction:column;gap:10px">
+    <div class="host-label">Host controls</div>
+    <button class="btn btn-danger" onclick="deleteGame()">Delete Game</button>
+  </div>
+  <button class="btn btn-secondary" onclick="leaveGame()">Leave</button>
+</div>
 
   <!-- WAGER -->
   <div id="s-wager" class="screen">

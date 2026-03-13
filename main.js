@@ -5,9 +5,9 @@ const MIN_SCORE      = 1;
 
 const QUESTIONS = [
   {
-    question: "What is the capital of France?",
-    options: ["Berlin", "Madrid", "Paris", "Rome"],
-    correctIndex: 2
+    question: "Who created the mac",
+    options: ["Bill Gates", "Steve Jobs", "Sam Altman", "Jensen Huang"],
+    correctIndex: 1
   },
   {
     question: "How many sides does a hexagon have?",

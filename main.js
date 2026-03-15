@@ -276,7 +276,7 @@ function showScreen(id) { show(id); }
 function setRole(r) {
   mpHostRole = r;
   document.getElementById('role-player').classList.toggle('active', r === 'player');
-  document.getElementById('role-spectator').classList.toggle('active', r === 'spectator');
+  //document.getElementById('role-spectator').classList.toggle('active', r === 'spectator');
 }
 
 function setJoinRole(r) {

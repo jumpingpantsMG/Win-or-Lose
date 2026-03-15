@@ -27,6 +27,24 @@ function startWagerTimer(secs) {
   }, 1000);
 }
 
+function mpStartWagerTimer(secs) {
+  clearInterval(MP.wagerTimerInt);
+  let left = secs;
+  const fill = document.getElementById('mp-w-t-fill');
+  const num  = document.getElementById('mp-w-t-num');
+  if (!fill || !num) return;
+  fill.style.width = '100%'; fill.style.background = 'var(--accent)';
+  num.style.color  = 'var(--accent)'; num.textContent = left;
+  MP.wagerTimerInt = setInterval(() => {
+    left--;
+    const pct = (left / secs) * 100;
+    const col = pct > 40 ? 'var(--accent)' : pct > 20 ? '#f0a030' : 'var(--danger)';
+    fill.style.width = pct + '%'; fill.style.background = col;
+    num.style.color  = col; num.textContent = left;
+    if (left <= 0) { clearInterval(MP.wagerTimerInt); submitWager(); }
+  }, 1000);
+}
+
 function getMaxWagerPct() {
   if (score < 0) {
     
@@ -202,6 +220,7 @@ const MP = {
   myAnswer:   null,
   wagerLocked:false,
   timerAnim:  null,
+  wagerTimerInt: null,
 };
 
 let mpHostRole = 'player';
@@ -347,18 +366,30 @@ function mpEnterWager(g) {
 
   const rng = document.getElementById('mp-w-range');
   const num = document.getElementById('mp-w-num');
-  const def = Math.floor(s / 2);
-  rng.max = s; rng.value = MP.wagerLocked ? g.myWager : def;
-  num.max = s; num.value = rng.value;
-  document.getElementById('mp-w-disp').textContent = rng.value;
+  rng.max = s; num.max = s;
 
-  document.getElementById('mp-wager-card').style.display    = (MP.isSpectator || MP.wagerLocked) ? 'none' : 'flex';
-  document.getElementById('mp-wager-locked').style.display  = (!MP.isSpectator && MP.wagerLocked) ? 'block' : 'none';
-  document.getElementById('mp-spectator-msg').style.display = MP.isSpectator ? 'block' : 'none';
-  document.getElementById('mp-reveal-wrap').style.display   = (MP.isHost && MP.wagerLocked) ? 'flex' : 'none';
+  if (MP.lastStatus !== 'wagering') {
+    const def = Math.floor(s / 2);
+    rng.value = MP.wagerLocked ? g.myWager : def;
+    num.value = rng.value;
+    document.getElementById('mp-w-disp').textContent = rng.value;
+
+    document.getElementById('mp-wager-card').style.display    = (MP.isSpectator || MP.wagerLocked) ? 'none' : 'flex';
+    document.getElementById('mp-wager-locked').style.display  = (!MP.isSpectator && MP.wagerLocked) ? 'block' : 'none';
+    document.getElementById('mp-spectator-msg').style.display = MP.isSpectator ? 'block' : 'none';
+    document.getElementById('mp-reveal-wrap').style.display   = (MP.isHost && MP.wagerLocked) ? 'flex' : 'none';
+
+    if (!MP.wagerLocked && !MP.isSpectator) mpStartWagerTimer(wagerTimeSecs);
+
+    show('mp-wager');
+  }
 
   mpRenderDots(g.players, 'hasWagered', 'mp-wager-dots');
-  show('mp-wager');
+
+  // show reveal button once host has wagered
+  if (MP.isHost && MP.wagerLocked) {
+    document.getElementById('mp-reveal-wrap').style.display = 'flex';
+  }
 }
 
 function mpSyncW(val, from) {
@@ -371,6 +402,7 @@ function mpSyncW(val, from) {
 }
 
 async function submitWager() {
+  clearInterval(MP.wagerTimerInt)
   const wager = parseInt(document.getElementById('mp-w-range').value);
   const res = await mpApi('POST', { type: 'wager', token: MP.token, code: MP.code, wager });
   if (!res.success) return toast(res.message);

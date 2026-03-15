@@ -2,11 +2,30 @@ const API = 'https://win-or-lose.jaidenkumar14-469.workers.dev';
 
 const MAX_WAGER_PCT  = 100;
 const MIN_SCORE      = 1;
+let wagerTimeSecs = 15;
+let wagerTimerInt = null;
 
 // --- nothing below here needs changing ---
 let questions = [];
 let qIndex=0, score=1000, wager=0;
 let timerInt=null, timerSecs=30, answered=false, recap=[];
+
+function startWagerTimer(secs) {
+  clearInterval(wagerTimerInt);
+  let left = secs;
+  const fill = document.getElementById('w-t-fill');
+  const num  = document.getElementById('w-t-num');
+  fill.style.width = '100%'; fill.style.background = 'var(--accent)';
+  num.style.color  = 'var(--accent)'; num.textContent = left;
+  wagerTimerInt = setInterval(() => {
+    left--;
+    const pct = (left / secs) * 100;
+    const col = pct > 40 ? 'var(--accent)' : pct > 20 ? '#f0a030' : 'var(--danger)';
+    fill.style.width = pct + '%'; fill.style.background = col;
+    num.style.color  = col; num.textContent = left;
+    if (left <= 0) { clearInterval(wagerTimerInt); lockWager(); }
+  }, 1000);
+}
 
 function getMaxWagerPct() {
   if (score < 0) {
@@ -34,6 +53,7 @@ async function startSolo() {
   qIndex     = 0;
   score      = res.startingScore;
   recap      = [];
+  wagerTimeSecs = res.wagerTimeSecs ?? 15;
   showWager();
 }
 
@@ -51,6 +71,7 @@ const maxWager = Math.floor(Math.abs(score) * (pct / 100));
   wager=half; 
   document.getElementById('w-max-hint').textContent=`max ${pct}% = ${maxWager.toLocaleString()}`;
   show('wager');
+  startWagerTimer(wagerTimeSecs);
 }
 
 function syncW(val,from){
@@ -63,8 +84,9 @@ function syncW(val,from){
 }
 
 function lockWager(){
-  const maxWager=Math.floor(Math.abs(score)*(getMaxWagerPct()/100));
-  wager=Math.max(0,Math.min(maxWager,parseInt(document.getElementById('w-num').value)||0));
+  clearInterval(wagerTimerInt);
+  const maxWager = Math.floor(Math.abs(score) * (getMaxWagerPct() / 100));
+  wager = Math.max(0, Math.min(maxWager, wager));
   showQuestion();
 }
 
@@ -112,12 +134,13 @@ function pick(i){
 }
 
 function resolve(picked){
-  const q=questions[qIndex];
-  const correct=picked===q.correctIndex;
-  const delta=correct?wager:-wager;
-  score=Math.max(MIN_SCORE,score+delta);
-  recap.push({question:q.question,correct,wager,delta});
-  setTimeout(()=>showResult(correct,delta,picked,q),600);
+  const q = questions[qIndex];
+  const correct = picked === q.correctIndex;
+  const oldScore = score;
+  score = correct ? score + wager : Math.max(MIN_SCORE, score - wager);
+  const actualDelta = score - oldScore;
+  recap.push({question: q.question, correct, wager, delta: actualDelta});
+  setTimeout(() => showResult(correct, actualDelta, picked, q), 600);
 }
 
 function showResult(correct,delta,picked,q){
@@ -161,6 +184,7 @@ async function playAgain() {
   qIndex    = 0;
   score     = res.startingScore;
   recap     = [];
+  wagerTimeSecs = res.wagerTimeSecs ?? 15;
   show('home');
 }
 

@@ -660,3 +660,80 @@ input[type="text"]:focus { border-color: var(--accent); }
 
 .lb-name  { font-weight: 700; flex: 1; }
 .lb-score { font-family: var(--fm); font-size: 16px; color: var(--accent); }
+
+/* ── Home graph ─────────────────────────────────────────── */
+
+.home-graph {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+#home-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.home-line {
+  stroke: var(--border);
+  stroke-width: 1.5;
+}
+
+.home-ring-outer {
+  fill: var(--card);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.home-ring-inner {
+  fill: var(--bg);
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.home-logo-1 {
+  font-family: var(--fd);
+  font-size: 28px;
+  letter-spacing: 4px;
+  fill: var(--accent);
+}
+
+.home-logo-2 {
+  font-family: var(--fd);
+  font-size: 28px;
+  letter-spacing: 4px;
+  fill: var(--text);
+}
+
+.home-node {
+  cursor: pointer;
+}
+
+.home-node rect {
+  fill: var(--card);
+  stroke: var(--border);
+  stroke-width: 1;
+  transition: stroke .15s;
+}
+
+.home-node:hover rect {
+  stroke: var(--accent);
+}
+
+.home-node-title {
+  font-family: var(--fd);
+  font-size: 15px;
+  letter-spacing: 2px;
+  fill: var(--accent);
+}
+
+.home-node-sub {
+  font-family: var(--fm);
+  font-size: 10px;
+  fill: var(--muted);
+}
+
+.home-info {
+  cursor: default;
+}

@@ -1,4 +1,4 @@
-const API = 'https://win-or-lose.jaidenkumar14-469.workers.dev';
+const API = 'https://win-or-lose.jumpingpantsmg.workers.dev';
 
 const MAX_WAGER_PCT  = 100;
 const MIN_SCORE      = 1;

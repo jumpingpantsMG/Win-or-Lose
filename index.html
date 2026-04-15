@@ -12,15 +12,51 @@
 <div id="app">
 
   <!-- HOME -->
-  <div id="s-home" class="screen">
-    <div>
-      <div class="logo">RISK<em>IT</em></div>
-      <div class="sub">wager everything · trust nothing</div>
-    </div>
-    <button class="btn btn-primary" onclick="showScreen('host-create')">Host Game</button>
-  <button class="btn btn-secondary" onclick="showScreen('join')">Join Game</button>
-  <button class="btn btn-secondary" onclick="startSolo()">Play Solo</button>
+  <!-- HOME -->
+<div id="s-home" class="screen">
+  <div class="home-graph">
+    <svg id="home-svg" viewBox="0 0 460 380" xmlns="http://www.w3.org/2000/svg">
+      <line class="home-line" x1="230" y1="190" x2="80"  y2="80"/>
+      <line class="home-line" x1="230" y1="190" x2="380" y2="80"/>
+      <line class="home-line" x1="230" y1="190" x2="80"  y2="310"/>
+      <line class="home-line" x1="230" y1="190" x2="380" y2="310"/>
+
+      <circle class="home-ring-outer" cx="230" cy="190" r="62"/>
+      <circle class="home-ring-inner" cx="230" cy="190" r="54"/>
+
+      <text class="home-logo-1" x="230" y="183" text-anchor="middle">RISK</text>
+      <text class="home-logo-2" x="230" y="208" text-anchor="middle">IT</text>
+
+      <g class="home-node" onclick="showScreen('host-create')">
+        <rect x="10" y="44" width="140" height="72" rx="10"/>
+        <text class="home-node-title" x="80" y="70" text-anchor="middle">HOST GAME</text>
+        <text class="home-node-sub"  x="80" y="88" text-anchor="middle">Create a session,</text>
+        <text class="home-node-sub"  x="80" y="103" text-anchor="middle">share your code</text>
+      </g>
+
+      <g class="home-node" onclick="showScreen('join')">
+        <rect x="310" y="44" width="140" height="72" rx="10"/>
+        <text class="home-node-title" x="380" y="70" text-anchor="middle">JOIN GAME</text>
+        <text class="home-node-sub"  x="380" y="88" text-anchor="middle">Enter a code,</text>
+        <text class="home-node-sub"  x="380" y="103" text-anchor="middle">play with friends</text>
+      </g>
+
+      <g class="home-node" onclick="startSolo()">
+        <rect x="10" y="264" width="140" height="72" rx="10"/>
+        <text class="home-node-title" x="80" y="290" text-anchor="middle">PLAY SOLO</text>
+        <text class="home-node-sub"  x="80" y="308" text-anchor="middle">Practice your</text>
+        <text class="home-node-sub"  x="80" y="323" text-anchor="middle">knowledge</text>
+      </g>
+
+      <g class="home-node home-info">
+        <rect x="310" y="264" width="140" height="72" rx="10"/>
+        <text class="home-node-title" x="380" y="290" text-anchor="middle">HOW TO PLAY</text>
+        <text class="home-node-sub"  x="380" y="308" text-anchor="middle">Wager points,</text>
+        <text class="home-node-sub"  x="380" y="323" text-anchor="middle">answer correctly</text>
+      </g>
+    </svg>
   </div>
+</div>
 
   <!-- HOST CREATE -->
 <div id="s-host-create" class="screen">
